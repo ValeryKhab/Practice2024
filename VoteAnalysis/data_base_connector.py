@@ -3,7 +3,6 @@
 Program for simulation several N-versions work of one module to test vote algorithms.
 Experiment is carried out in Denis V. Gruzenkin PhD thesis writing.
 """
-
 import sqlite3
 
 __author__ = "Denis V. Gruzenkin"
@@ -51,48 +50,31 @@ class DBConnector(metaclass=DBConnectorMeta):
         :param return_query_set: Is needed return query set flag, by default is True
         :return: SQL query set or None
         """
-        many_parameters = False
-        if len(parameters) > 0:
-            # Если в качестве параметров передан список или кортеж, содержащий составной тип,
-            prev_param_len = len(parameters[0])
-            for param in parameters:
-                if type(param) not in (tuple, list) or prev_param_len != len(param):
-                    break
-                prev_param_len = len(param)
-            else:  # то считаем, что в запрос передано множество параметров (скорее всего на вставку)
-                many_parameters = True
 
+        result = None
         cursor = self._connection.cursor()
-
-        if many_parameters:
+        if parameters and all(isinstance(param, (tuple, list)) for param in parameters):
+            # Если в качестве параметров передан список или кортеж, содержащий составной тип,
+            # то считаем, что в запрос передано множество параметров (скорее всего на вставку)
             cursor.executemany(query_str, parameters)
         else:
             cursor.execute(query_str)
-
         if commit:
             self._connection.commit()
-
-        result = None
         if return_query_set:
             # Если выполняется запрос на вставку, и необходимо вернуть результат, то возвращаем id добавленной строки
-            query_lst = query_str.lower().split(' ')
-            if query_lst[0] == 'insert' and self.table_exists(query_lst[2]):
+            if 'insert' in query_str.lower() and self.table_exists(query_str.split()[2]):
                 # Форма запроса на вставку: insert into table_name
                 #                              0     1      2
                 # Соответственно имя таблицы будет под индексом 2
-                cursor.execute(f'SELECT id FROM {query_lst[2]} WHERE rowid=last_insert_rowid();')
+                cursor.execute(f'SELECT id FROM {query_str.split()[2]} WHERE rowid=last_insert_rowid();')
             result = cursor.fetchall()
-
         cursor.close()
-
         return result
 
     def table_exists(self, table_name: str) -> bool:
         check_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
-        result = False
-        if len(self.execute_query(check_query)) > 0:
-            result = True
-        return result
+        return bool(self.execute_query(check_query))
 
     def __str__(self):
         return f'{self._db_name} – {str(self._connection)}'
