@@ -13,8 +13,7 @@ def vote(results: list[NResult]) -> float:
     # количество как максимально возможное для данного случая (n - общее количество результатов) по формуле: n >= 2t + 1
     # В худшем случае (когда нестабильных версий t максимальное число при заданном n), эта формула становится равенством
     n = len(results)
-    t = ((n - 1) / 2).__trunc__()  # Отбрасываем дробную часть на случай работы с чётным количеством версий
-
+    t = (n - 1) // 2  # Отбрасываем дробную часть на случай работы с чётным количеством версий
     # Т.к. на выход в компаратор идут не все версии, надо вычислить их значение как разность всех сравниваемых версий и
     # количества потенциально ненадёжных версий
     output_count = n - t
@@ -23,7 +22,7 @@ def vote(results: list[NResult]) -> float:
     # качестве выходного. Кроме того на выход пойдут результаты первой и последней сравниваемой версий, а также значения
     # версий из набора сравниваемых версий (n - 1), начиная с первого с шагом (n - 1) / (output_count - 1). От
     # output_count отнимается 1, т.к. один выход точно будет приходиться на версию с последним индексом
-    output_indexes_step = ((n - 1) / (output_count - 1)).__trunc__()
+    output_indexes_step = (n - 1) // (output_count - 1)
     output_indexes = {i: results[i].version_answer for i in range(0, n - 1, output_indexes_step)}
     output_indexes[n - 1] = results[n - 1].version_answer
 
@@ -36,7 +35,6 @@ def vote(results: list[NResult]) -> float:
     for i in range(n - 2):
         if results[i].version_answer == results[i + 1].version_answer:
             comparators[(i, i + 1)] = 0
-
             # Сразу считаем максимальное число версий с одинаковым ответом, чтобы не пришлось заходить в следующий цикл
             if cur_max_group_count == 0:
                 cur_start_index = i
@@ -46,13 +44,11 @@ def vote(results: list[NResult]) -> float:
                 cur_max_group_count += 1
         else:
             comparators[(i, i + 1)] = 1
-
             if cur_start_index != -1:
                 if cur_max_group_count not in max_count_indexes:
                     max_count_indexes[cur_max_group_count] = [(cur_start_index, i)]
                 else:
                     max_count_indexes[cur_max_group_count].append((cur_start_index, i))
-
             cur_start_index = -1
             cur_max_group_count = 0
 
@@ -71,7 +67,7 @@ def vote(results: list[NResult]) -> float:
     # верным, если ответы всех остальных сравнений будут несогласованы), если найдена одна группа совпадающих ответов
     # > t, то она выдаёт верный ответ, если найдены 2 одинаковые совпадающие группы >= t, или ответ не найден по двум
     # предыдущим правилам, то берём значение последней версии (не учавствовавшей в сравнении)
-    correct_result: float
+    correct_result: float = output_indexes[n - 1] # Если групп с максимальным числом версий > 1, то не ясно, какую выбрать - выбираем последний результат
     # Если совпали ответы подряд идущих версий, причём их число не меньше числа версий, которые могут выдать ошибку,
     if max_group_count >= t:
         # то проверяем, всего ли одна группа таких версий существует (для случая > t проверяем, чтобы работало и когда
@@ -87,9 +83,5 @@ def vote(results: list[NResult]) -> float:
                 # Если по какой-то причине ответ не был найден (хотя такое вряд-ли возможно), то берём его не от версии,
                 # чей ответ должен идти на выход, а от версии, чей индекс первый в диапазоне
                 correct_result = results[max_count_indexes[max_group_count][0][0]].version_answer
-        else:  # Если групп с максимальным числом версий > 1, то не ясно, какую выбрать - выбираем последний результат
-            correct_result = output_indexes[n - 1]
-    else:
-        correct_result = output_indexes[n - 1]
 
     return correct_result
