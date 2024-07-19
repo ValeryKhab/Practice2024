@@ -2,10 +2,12 @@ import enum
 import sys
 
 from Entities.n_module import NModule, input_num
-from VoteAnalysisCleanArchitecture.Entities.vote_algorithm import VoteAlgorithm
+from Entities.vote_algorithm import VoteAlgorithm
 from InterfaceAdapters.nmodule_repository import NModuleRepository
 from InterfaceAdapters.vote_algorithm_repository import VoteAlgorithmRepository
-from UseCases.data_generator import generate_experiment_data
+from UseCases.data_generator import DataGenerator
+from UseCases.vote_algorithm_runner import VoteAlgorithmRunner
+from UseCases.version_manager import VersionManager
 
 
 class MenuOption(enum.Enum):
@@ -163,8 +165,9 @@ def generate_data(
     modules_list: list, current_module_index: int, experiments_names_list: list
 ):
     exp_name = input("Enter experiment name: ")
-    generate_data = generate_experiment_data(
-        modules_list[current_module_index],
+    generate_data = DataGenerator(
+        modules_list[current_module_index]
+    ).generate_experiment_data(
         input_num("Enter iterations amount: ", (0.0, float("inf"))),
         exp_name,
     )
@@ -219,11 +222,10 @@ def run_vote_algorithm(
         if check_var_is_not_none(current_module_index, ""):
             if len(vote_algorithms_list) > 0:
                 for cur_algorithm in vote_algorithms_list:
-                    cur_algorithm.vote(
+                    VoteAlgorithmRunner(cur_algorithm).vote(
                         modules_list[current_module_index].global_results_lst
                     )
-                    cur_algorithm_rep = VoteAlgorithmRepository(cur_algorithm)
-                    cur_algorithm_rep.save_vote_results()
+                    VoteAlgorithmRepository(cur_algorithm).save_vote_results()
             else:
                 print("There are no algorithms to show!")
         else:
@@ -275,7 +277,9 @@ def main():
             if check_var_is_not_none(
                 current_module_index, module_index_err_str
             ):
-                modules_list[current_module_index].add_versions()
+                VersionManager(
+                    modules_list[current_module_index]
+                ).add_versions()
         elif user_chosen_item == MenuOption.LOAD_MODULE_WITH_VERSIONS:
             if check_var_is_not_none(current_module_index, ""):
                 modules_list[current_module_index] = NModuleRepository(

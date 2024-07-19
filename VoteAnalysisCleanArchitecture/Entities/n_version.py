@@ -76,7 +76,7 @@ class NVersion:
             raise ValueError("Reliability interval is [0, 1]")
 
     def generate_reliability(self, min_val: float, max_val: float, round_to=6):
-        self._reliability = uniform(min_val, max_val).__round__(round_to)
+        self._reliability = round(uniform(min_val, max_val), round_to)
 
     @staticmethod
     def _calc_euclidean_distance(

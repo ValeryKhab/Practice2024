@@ -1,7 +1,5 @@
 import os
 
-from VoteAnalysisCleanArchitecture.Entities.n_result import NResult
-
 
 class ModuleNotLoadedError(Exception):
     pass
@@ -69,16 +67,6 @@ class VoteAlgorithm:
         else:
             raise ModuleNotFoundError(
                 f"Cannot find module by path: {new_path}"
-            )
-
-    def vote(self, nversions_results: list[list[NResult]]):
-        self._vote_result = list()
-        for iteration_result in nversions_results:
-            self._vote_result.append(
-                {
-                    "data": iteration_result,
-                    "res": self._vote_algorithm(iteration_result),
-                }
             )
 
     def __str__(self):
