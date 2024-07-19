@@ -4,7 +4,7 @@ import os
 
 from InterfaceAdapters.data_base_connector import DBConnector
 from InterfaceAdapters.nmodule_repository import NModuleRepository
-from VoteAnalysisCleanArchitecture.UseCases.vote_algorithm import (
+from VoteAnalysisCleanArchitecture.Entities.vote_algorithm import (
     VoteAlgorithm,
     ModuleNotLoadedError,
     FunctionNotFoundInModuleError,

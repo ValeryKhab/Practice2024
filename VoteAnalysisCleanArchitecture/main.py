@@ -2,7 +2,7 @@ import enum
 import sys
 
 from Entities.n_module import NModule, input_num
-from UseCases.vote_algorithm import VoteAlgorithm
+from VoteAnalysisCleanArchitecture.Entities.vote_algorithm import VoteAlgorithm
 from InterfaceAdapters.nmodule_repository import NModuleRepository
 from InterfaceAdapters.vote_algorithm_repository import VoteAlgorithmRepository
 from UseCases.data_generator import generate_experiment_data
