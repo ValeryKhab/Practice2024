@@ -9,7 +9,7 @@ from InterfaceAdapters.nversion_repository import NVersionRepository
 
 class NModuleRepository:
     def __init__(self, module: NModule):
-        self.dbConnector = DBConnector('experiment.db')
+        self.dbConnector = DBConnector("experiment.db")
         self.module = module
 
     def get_version_by_id(self, id_4_search: int) -> NVersion | None:
@@ -20,8 +20,8 @@ class NModuleRepository:
             return None
 
     def save_module(self):
-        if not self.dbConnector.table_exists('module'):
-            create_query = '''
+        if not self.dbConnector.table_exists("module"):
+            create_query = """
                 create table module (
                     "id" integer primary key autoincrement not null,
                     "name" varchar(255) not null, "round_to" integer not null, 
@@ -30,11 +30,11 @@ class NModuleRepository:
                     "dynamic_diversities_count" integer null, 
                     "min_out_val" real not null, "max_out_val" real null
                 );
-            '''
+            """
             self.dbConnector.execute_query(create_query, [], True, False)
 
         if self.module.id is None:
-            insert_query = f'''
+            insert_query = f"""
                 insert into module (name, round_to, dynamic_diversities_intervals, const_diversities_count, 
                 dynamic_diversities_count, min_out_val, max_out_val) values (
                     '{self.module.name}', {self.module.round_to}, 
@@ -42,17 +42,19 @@ class NModuleRepository:
                     {self.module.const_diversities_count}, {self.module.dynamic_diversities_count}, 
                     {self.module.min_out_val}, {self.module.max_out_val}
                 );
-            '''
+            """
             # Т.к. у нас возвращается список кортежей, берём первый элемент первого кортежа, т.к. id сего 1 возвращется!
-            self.module._id = self.dbConnector.execute_query(insert_query, [], True)[0][0]
+            self.module._id = self.dbConnector.execute_query(
+                insert_query, [], True
+            )[0][0]
         else:
-            update_query = f'''
+            update_query = f"""
                 update module set name = '{self.module.name}', round_to = {self.module.round_to}, 
                 dynamic_diversities_intervals = '{json.dumps(self.module.dynamic_diversities_intervals_dict)}', 
                 const_diversities_count = '{self.module.const_diversities_count}', 
                 dynamic_diversities_count = {self.module.dynamic_diversities_count}, 
                 min_out_val = {self.module.min_out_val}, max_out_val = {self.module.max_out_val} where id = {self.module._id};
-            '''
+            """
             self.dbConnector.execute_query(update_query, [], True, False)
 
     def save_module_with_versions(self):
@@ -62,11 +64,16 @@ class NModuleRepository:
             version_rep.save(self.module.id)
 
     def save_experiment_data(self):
-        if not self.module.global_results_lst_2_write or len(self.module.global_results_lst_2_write) == 0:
-            raise LookupError('There is no experiment data to save into data base')
+        if (
+            not self.module.global_results_lst_2_write
+            or len(self.module.global_results_lst_2_write) == 0
+        ):
+            raise LookupError(
+                "There is no experiment data to save into data base"
+            )
 
-        if not self.dbConnector.table_exists('experiment_data'):
-            create_query = '''
+        if not self.dbConnector.table_exists("experiment_data"):
+            create_query = """
                 create table experiment_data (
                     "id" integer primary key autoincrement not null, 
                     version_id integer not null, version_name varchar(255), 
@@ -84,30 +91,43 @@ class NModuleRepository:
                     foreign key ("version_id") references version(id), 
                     foreign key ("module_id") references module(id)
                 );
-            '''
+            """
             self.dbConnector.execute_query(create_query, [], True, False)
         # Обращаемся к первому результату первой итерации для провеки, присвоен ли ему id, чтобы понять, надо ли
         # сохранять результаты, или они уже сохранены, т.к. можно только перегенерировать их, но не изменить
         if self.module._global_results_lst[0][0].id is None:
-            insert_query = '''
+            insert_query = """
                 insert into experiment_data (version_id, version_name, version_reliability, 
                 version_common_coordinates, version_answer, correct_answer, module_id, module_name, 
                 module_connectivity_matrix, module_iteration_num, experiment_name) values (
                     ?,?,?,?,?,?,?,?,?,?,?
                 );
-            '''
-            self.dbConnector.execute_query(insert_query, self.module.global_results_lst_2_write, True, False)
+            """
+            self.dbConnector.execute_query(
+                insert_query,
+                self.module.global_results_lst_2_write,
+                True,
+                False,
+            )
 
-            if input('Do you want to load IDs of saved data? Yes - Y; No - any key').upper() == 'Y':
+            if (
+                input(
+                    "Do you want to load IDs of saved data? Yes - Y; No - any key"
+                ).upper()
+                == "Y"
+            ):
                 self.load_experiment_data(self.module._experiment_name)
 
     def load_experiment_data(self, experiment_name: str = None):
-        if not self.dbConnector.table_exists('experiment_data'):
+        if not self.dbConnector.table_exists("experiment_data"):
             raise LookupError(
                 f'There is no "EXPERIMENT_DATA" table in {self.dbConnector.db_name} data base. Save experiment data before load it'
             )
         can_we_go_further = False
-        if experiment_name is None and self.module._experiment_name is not None:
+        if (
+            experiment_name is None
+            and self.module._experiment_name is not None
+        ):
             experiment_name = self.module._experiment_name
             can_we_go_further = True
 
@@ -115,11 +135,11 @@ class NModuleRepository:
             can_we_go_further = True
 
         if can_we_go_further:
-            select_query = f'''
+            select_query = f"""
                 select id, version_id, version_name, version_reliability, version_common_coordinates, 
                 version_answer, correct_answer, module_id, module_name, module_connectivity_matrix, 
                 module_iteration_num, experiment_name from experiment_data where experiment_name = '{experiment_name}';
-            '''
+            """
             select_res = self.dbConnector.execute_query(select_query)
             # Если удалось загрузить данные из БД,
             if len(select_res) > 0:
@@ -137,10 +157,23 @@ class NModuleRepository:
                     cur_iter_list = list()
 
                 cur_iter_num = res[10]
-                cur_iter_list.append(NResult(res[1], res[2], res[3], json.loads(res[4])['version_coordinates'],
-                                             res[5], res[6], res[7], res[8],
-                                             json.loads(res[9])['connectivity_matrix'], res[10],
-                                             self.get_version_by_id(res[1]), res[0], res[11]))
+                cur_iter_list.append(
+                    NResult(
+                        res[1],
+                        res[2],
+                        res[3],
+                        json.loads(res[4])["version_coordinates"],
+                        res[5],
+                        res[6],
+                        res[7],
+                        res[8],
+                        json.loads(res[9])["connectivity_matrix"],
+                        res[10],
+                        self.get_version_by_id(res[1]),
+                        res[0],
+                        res[11],
+                    )
+                )
                 if self.module._experiment_name is None:
                     self.module._experiment_name = res[11]
 
@@ -151,41 +184,47 @@ class NModuleRepository:
             self.module._get_global_results_lst_2_write()
         else:
             raise ValueError(
-                f'Unexpected value {experiment_name} of experiment_name parameter!'
+                f"Unexpected value {experiment_name} of experiment_name parameter!"
             )
 
     def get_experiments_names(self):
-        if self.dbConnector.table_exists('experiment_data'):
-            experiment_select_res = self.dbConnector.execute_query("select distinct experiment_name from experiment_data;")
+        if self.dbConnector.table_exists("experiment_data"):
+            experiment_select_res = self.dbConnector.execute_query(
+                "select distinct experiment_name from experiment_data;"
+            )
             return [exp_name[0] for exp_name in experiment_select_res]
 
     def load_module(self):
-        if not self.dbConnector.table_exists('module'):
+        if not self.dbConnector.table_exists("module"):
             raise LookupError(
                 f'There is no "MODULE" table in {self.dbConnector.db_name} data base. Save module data before load it.'
             )
         if self.module.id is None:
-            q_set = self.dbConnector.execute_query('select distinct id, name, round_to from module order by id;')
-            get_num_str = 'Choice module by id to load it.\n'
+            q_set = self.dbConnector.execute_query(
+                "select distinct id, name, round_to from module order by id;"
+            )
+            get_num_str = "Choice module by id to load it.\n"
             for mdl in q_set:
-                get_num_str += f'\n{str(mdl)}'
-            get_num_str += '\n'
+                get_num_str += f"\n{str(mdl)}"
+            get_num_str += "\n"
             chosen_id = input_num(get_num_str)
         else:
             chosen_id = self.module.id
 
-        select_query = f'''
+        select_query = f"""
             select id, name, round_to, dynamic_diversities_intervals, 
             const_diversities_count, dynamic_diversities_count, 
             min_out_val, max_out_val from module where id = {chosen_id};
-        '''
+        """
         select_res = self.dbConnector.execute_query(select_query)
 
         # Т.к. у нас только 1 модуль может быть найден по id, то обращаемся мы к 0-му индексу, без доп. проверок
         self.module._id = select_res[0][0]
         self.module.name = select_res[0][1]
         self.module.round_to = select_res[0][2]
-        self.module._dynamic_diversities_intervals_dict = json.loads(select_res[0][3])
+        self.module._dynamic_diversities_intervals_dict = json.loads(
+            select_res[0][3]
+        )
         self.module._const_diversities_count = select_res[0][4]
         self.module._dynamic_diversities_count = select_res[0][5]
         self.module.min_out_val = select_res[0][6]
@@ -196,7 +235,9 @@ class NModuleRepository:
         try:
             self.load_module()
             version_rep = NVersionRepository(None)
-            self.module._versions_list = version_rep.load_versions_2_module(self.module.id)
+            self.module._versions_list = version_rep.load_versions_2_module(
+                self.module.id
+            )
             return self.module
         except (LookupError, AttributeError) as e:
             print(str(e))

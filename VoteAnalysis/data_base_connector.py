@@ -41,7 +41,9 @@ class DBConnector(metaclass=DBConnectorMeta):
     def connect_2_db(self):
         self._connection = sqlite3.connect(self._db_name)
 
-    def execute_query(self, query_str, parameters=[], commit=False, return_query_set=True):
+    def execute_query(
+        self, query_str, parameters=[], commit=False, return_query_set=True
+    ):
         """
         It executes query string with or without parameters and commit and return query set if it is necessary
         :param query_str: SQL-query string for execution
@@ -53,7 +55,9 @@ class DBConnector(metaclass=DBConnectorMeta):
 
         result = None
         cursor = self._connection.cursor()
-        if parameters and all(isinstance(param, (tuple, list)) for param in parameters):
+        if parameters and all(
+            isinstance(param, (tuple, list)) for param in parameters
+        ):
             # Если в качестве параметров передан список или кортеж, содержащий составной тип,
             # то считаем, что в запрос передано множество параметров (скорее всего на вставку)
             cursor.executemany(query_str, parameters)
@@ -63,11 +67,15 @@ class DBConnector(metaclass=DBConnectorMeta):
             self._connection.commit()
         if return_query_set:
             # Если выполняется запрос на вставку, и необходимо вернуть результат, то возвращаем id добавленной строки
-            if 'insert' in query_str.lower() and self.table_exists(query_str.split()[2]):
+            if "insert" in query_str.lower() and self.table_exists(
+                query_str.split()[2]
+            ):
                 # Форма запроса на вставку: insert into table_name
                 #                              0     1      2
                 # Соответственно имя таблицы будет под индексом 2
-                cursor.execute(f'SELECT id FROM {query_str.split()[2]} WHERE rowid=last_insert_rowid();')
+                cursor.execute(
+                    f"SELECT id FROM {query_str.split()[2]} WHERE rowid=last_insert_rowid();"
+                )
             result = cursor.fetchall()
         cursor.close()
         return result
@@ -77,4 +85,4 @@ class DBConnector(metaclass=DBConnectorMeta):
         return bool(self.execute_query(check_query))
 
     def __str__(self):
-        return f'{self._db_name} – {str(self._connection)}'
+        return f"{self._db_name} – {str(self._connection)}"

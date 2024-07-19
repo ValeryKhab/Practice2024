@@ -6,8 +6,15 @@ class NVersion:
     """
     Real NVP version emulation
     """
-    def __init__(self, n_id: int = None, name: str = 'NoName', const_diversities: tuple[float] = tuple()
-                 , dynamic_diversities: list[tuple] = None, reliability: float = 0):
+
+    def __init__(
+        self,
+        n_id: int = None,
+        name: str = "NoName",
+        const_diversities: tuple[float] = tuple(),
+        dynamic_diversities: list[tuple] = None,
+        reliability: float = 0,
+    ):
         """
         NVersion class constructor
         :param n_id:
@@ -66,29 +73,37 @@ class NVersion:
         if 0 <= float(new_val) <= 1:
             self._reliability = new_val
         else:
-            raise ValueError('Reliability interval is [0, 1]')
+            raise ValueError("Reliability interval is [0, 1]")
 
     def generate_reliability(self, min_val: float, max_val: float, round_to=6):
         self._reliability = uniform(min_val, max_val).__round__(round_to)
 
     @staticmethod
-    def _calc_euclidean_distance(lst1: list[float], lst2: list[float]) -> float:
+    def _calc_euclidean_distance(
+        lst1: list[float], lst2: list[float]
+    ) -> float:
         if len(lst1) != len(lst2):
-            raise ValueError('Different coordinates amount')
+            raise ValueError("Different coordinates amount")
         return sqrt(sum((x - y) ** 2 for x, y in zip(lst1, lst2)))
 
     @property
     def distance_from_zero_point(self):
         return self._calc_euclidean_distance(
             self.common_coordinates_list,
-            list(map(lambda arg: arg * 0, self.common_coordinates_list)))
+            list(map(lambda arg: arg * 0, self.common_coordinates_list)),
+        )
 
-    def generate_dynamic_diversities(self, intervals_lst: list[tuple], round_to=6):
+    def generate_dynamic_diversities(
+        self, intervals_lst: list[tuple], round_to=6
+    ):
         for tpl in intervals_lst:
             self._dynamic_diversities.append(round(uniform(*tpl), round_to))
 
     def calculate_distance_to(self, another_version) -> float:
-        return self._calc_euclidean_distance(self.common_coordinates_list, another_version.common_coordinates_list)
+        return self._calc_euclidean_distance(
+            self.common_coordinates_list,
+            another_version.common_coordinates_list,
+        )
 
     def __str__(self):
-        return f'{self._id}. {self._name} [{self._reliability}] {self.common_coordinates_list}'
+        return f"{self._id}. {self._name} [{self._reliability}] {self.common_coordinates_list}"

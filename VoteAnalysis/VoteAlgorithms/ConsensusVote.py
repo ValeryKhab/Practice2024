@@ -5,7 +5,9 @@ import random
 error_string = "Input list is empty"
 
 
-def classic_vote(results: list[NResult], return_classes_list: bool = False) -> float:
+def classic_vote(
+    results: list[NResult], return_classes_list: bool = False
+) -> float:
     if not results or len(results) == 0:
         print(error_string)
         raise ValueError(error_string)
@@ -58,7 +60,9 @@ def calc_versions_diversity(results_list: list[NResult]) -> float:
     max_diversity: float = 0
     for j in range(len(results_list)):
         for k in range(j + 1, len(results_list)):
-            cur_diversity = results_list[j].version.calculate_distance_to(results_list[k].version)
+            cur_diversity = results_list[j].version.calculate_distance_to(
+                results_list[k].version
+            )
             max_diversity = max(max_diversity, cur_diversity)
     return max_diversity
 
@@ -81,11 +85,15 @@ def modified_vote(results: list[NResult]) -> float:
             # Если 2 класса содержат одинаковое число ответов,
             # то пробуем посмотреть на уровень диверсифицированности этих групп - выбираем ту, где версии более
             # различны между собой
-            if class_len > max_values_in_class or (class_len == max_values_in_class and tmp_max_len > max_length):
+            if class_len > max_values_in_class or (
+                class_len == max_values_in_class and tmp_max_len > max_length
+            ):
                 max_values_in_class = class_len
                 max_classes = [classes_list[i]]
                 max_length = tmp_max_len
-            elif class_len == max_length and tmp_max_len == max_length: # Если и число версий в классе, и диверсифицированность версий
+            elif (
+                class_len == max_length and tmp_max_len == max_length
+            ):  # Если и число версий в классе, и диверсифицированность версий
                 # внутри классов одинаковые, то возвращаемся к классическому методу - выбираем случайно, т.к.
                 # нет дополнительной информации
                 max_classes.append(classes_list[i])

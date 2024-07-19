@@ -27,7 +27,9 @@ class DBConnector(metaclass=DBConnectorMeta):
     def connect_2_db(self):
         self._connection = sqlite3.connect(self._db_name)
 
-    def execute_query(self, query_str, parameters=[], commit=False, return_query_set=True):
+    def execute_query(
+        self, query_str, parameters=[], commit=False, return_query_set=True
+    ):
         """
         It executes query string with or without parameters and commit and return query set if it is necessary
         :param query_str: SQL-query string for execution
@@ -39,15 +41,21 @@ class DBConnector(metaclass=DBConnectorMeta):
 
         result = None
         cursor = self._connection.cursor()
-        if parameters and all(isinstance(param, (tuple, list)) for param in parameters):
+        if parameters and all(
+            isinstance(param, (tuple, list)) for param in parameters
+        ):
             cursor.executemany(query_str, parameters)
         else:
             cursor.execute(query_str)
         if commit:
             self._connection.commit()
         if return_query_set:
-            if 'insert' in query_str.lower() and self.table_exists(query_str.split()[2]):
-                cursor.execute(f'SELECT id FROM {query_str.split()[2]} WHERE rowid=last_insert_rowid();')
+            if "insert" in query_str.lower() and self.table_exists(
+                query_str.split()[2]
+            ):
+                cursor.execute(
+                    f"SELECT id FROM {query_str.split()[2]} WHERE rowid=last_insert_rowid();"
+                )
             result = cursor.fetchall()
         cursor.close()
         return result
@@ -57,4 +65,4 @@ class DBConnector(metaclass=DBConnectorMeta):
         return bool(self.execute_query(check_query))
 
     def __str__(self):
-        return f'{self._db_name} – {str(self._connection)}'
+        return f"{self._db_name} – {str(self._connection)}"
