@@ -88,7 +88,7 @@ class NModuleRepository:
             self.dbConnector.execute_query(create_query, [], True, False)
         # Обращаемся к первому результату первой итерации для провеки, присвоен ли ему id, чтобы понять, надо ли
         # сохранять результаты, или они уже сохранены, т.к. можно только перегенерировать их, но не изменить
-        if self._global_results_lst[0][0].id is None:
+        if self.module._global_results_lst[0][0].id is None:
             insert_query = '''
                 insert into experiment_data (version_id, version_name, version_reliability, 
                 version_common_coordinates, version_answer, correct_answer, module_id, module_name, 
@@ -190,11 +190,13 @@ class NModuleRepository:
         self.module._dynamic_diversities_count = select_res[0][5]
         self.module.min_out_val = select_res[0][6]
         self.module.max_out_val = select_res[0][7]
+        return self.module
 
     def load_module_with_versions(self):
         try:
             self.load_module()
             version_rep = NVersionRepository(None)
             self.module._versions_list = version_rep.load_versions_2_module(self.module.id)
+            return self.module
         except (LookupError, AttributeError) as e:
             print(str(e))

@@ -145,7 +145,7 @@ def load_experiment_data(modules_list: list, current_module_index: int, experime
     show_list(experiments_names_list, 'Experiments names:')
     exp_name_index = input_num(
         'Choice experiment by order number to its data load: ',
-        (-1, len(modules_list))) - 1
+        (-1, len(modules_list) + 1)) - 1
     try:
         module_rep.load_experiment_data(experiments_names_list[exp_name_index])
     except ValueError:
@@ -160,8 +160,7 @@ def add_vote_algorithm(vote_algorithms_list: list):
                         'VoteAlgorithms package): ')
     vote_function_name = input('Enter vote function name in module: ')
     vote_algorithms_list.append(
-        VoteAlgorithm(algorithm_name, vote_function_name, module_name,
-                      'Frameworks.VoteAlgorithms'))
+        VoteAlgorithm(algorithm_name, vote_function_name, module_name))
 
 
 def run_vote_algorithm(modules_list: list, current_module_index: int,
@@ -213,7 +212,7 @@ def main():
                 modules_list[current_module_index].add_versions()
         elif user_chosen_item == MenuOption.LOAD_MODULE_WITH_VERSIONS:
             if check_var_is_not_none(current_module_index, ""):
-                NModuleRepository(modules_list[current_module_index]).load_module_with_versions()
+                modules_list[current_module_index] = NModuleRepository(modules_list[current_module_index]).load_module_with_versions()
             else:
                 modules_list.append(NModuleRepository(NModule('NoName', 6)).load_module_with_versions())
         elif user_chosen_item == MenuOption.SAVE_MODULE_WITH_VERSIONS:

@@ -147,7 +147,7 @@ def load_experiment_data(modules_list: list, current_module_index: int, experime
     show_list(experiments_names_list, 'Experiments names:')
     exp_name_index = input_num(
         'Choice experiment by order number to its data load: ',
-        (-1, len(modules_list))) - 1
+        (-1, len(modules_list) + 1)) - 1
     try:
         modules_list[current_module_index].load_experiment_data(
             experiments_names_list[exp_name_index])

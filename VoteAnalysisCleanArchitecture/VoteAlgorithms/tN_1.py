@@ -5,7 +5,7 @@ https://eprints.ncl.ac.uk/file_store/production/59232/8480AF9B-598A-462C-8417-1B
 Program for simulation several N-versions work of one module to test vote algorithms.
 Experiment is carried out in Denis V. Gruzenkin PhD thesis writing.
 """
-from data_generator import NResult
+from VoteAnalysisCleanArchitecture.Entities.n_result import NResult
 
 
 def vote(results: list[NResult]) -> float:

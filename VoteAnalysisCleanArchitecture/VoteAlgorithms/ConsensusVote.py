@@ -1,4 +1,4 @@
-from data_generator import NResult
+from VoteAnalysisCleanArchitecture.Entities.n_result import NResult
 import random
 
 

@@ -42,7 +42,7 @@ class VoteAlgorithm:
             if not hasattr(self._vote_module, vote_func_name):
                 raise FunctionNotFoundInModuleError(f'There is no function {vote_func_name} in {module_name}')
             self._vote_algorithm = getattr(self._vote_module, vote_func_name)
-        except (ModuleNotFoundError, FunctionNotFoundInModuleError) as e:
+        except ModuleNotFoundError as e:
             raise e
         except Exception as e:
             print(e.__str__())

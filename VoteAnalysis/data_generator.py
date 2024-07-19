@@ -155,9 +155,9 @@ class NVersion:
             insert_query = f'''
                 insert into version (name, const_diversities_coordinates, 
                 dynamic_diversities_coordinates, reliability, module) values (
-                    {self._name}, 
-                    {json.dumps({self.formal_json_db_lst_name: self._const_diversities})}, 
-                    {json.dumps({self.formal_json_db_lst_name: self._dynamic_diversities})},
+                    '{self._name}', 
+                    '{json.dumps({self.formal_json_db_lst_name: self._const_diversities})}', 
+                    '{json.dumps({self.formal_json_db_lst_name: self._dynamic_diversities})}',
                     {self._reliability}{additional_query_str});
             '''
             # Т.к. у нас возвращается список кортежей, берём первый элемент первого кортежа, т.к. id сего 1 возвращется!
@@ -452,7 +452,10 @@ class NModule:
         return round(normalvariate(base_val, diversity_coefficient * base_val), self.round_to)
 
     def _process_clone_versions(self, clone_versions, cur_correct_val, result_lst, i, experiment_name):
-        min_rel = min(ver.reliability for ver in clone_versions)
+        try:
+            min_rel = min(ver.reliability for ver in clone_versions)
+        except ValueError:
+            min_rel = 1
 
         # Генерируем число, которое покажет, отработали ли версии верно. Если оно будет больше минимальной
         # надёжности, то считаем, что все версии выдают одно ошибочное значение, иначе - все выдают верный ответ
@@ -580,7 +583,7 @@ class NModule:
             # Разбиваем версии на группы для различной генерации результатов их работы
             clone_versions, similar_versions, partly_similar_versions, difference_versions = self._group_versions()
             # Генерируем значение, которое будет считаться правильным ответом на текущей итерации
-            cur_correct_val = uniform(self.min_out_val, self.max_out_val).__round__(self.round_to)
+            cur_correct_val = round(uniform(self.min_out_val, self.max_out_val), self.round_to)
             # Теперь для каждой группы версий генерируем результаты их работы
             # ---------------------------------------------------------------
             # 1. Генерируем выходные данные для версий-клонов

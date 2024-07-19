@@ -25,12 +25,12 @@ class VoteAlgorithm:
         try:
             self._module_pkg = __import__(f'{module_pkg}.{module_name}')
             if not hasattr(self._module_pkg, module_name):
-                raise ModuleNotLoadedError(f'Cannot load module VoteAlgorithms.{module_name}')
+                raise ModuleNotLoadedError(f'Cannot load module {module_pkg}.{module_name}')
             self._vote_module = getattr(self._module_pkg, module_name)
             if not hasattr(self._vote_module, vote_func_name):
                 raise FunctionNotFoundInModuleError(f'There is no function {vote_func_name} in {module_name}')
             self._vote_algorithm = getattr(self._vote_module, vote_func_name)
-        except (ModuleNotFoundError, FunctionNotFoundInModuleError) as e:
+        except ModuleNotFoundError as e:
             raise e
         except Exception as e:
             print(e.__str__())

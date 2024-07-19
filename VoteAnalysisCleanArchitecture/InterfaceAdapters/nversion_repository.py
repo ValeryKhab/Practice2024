@@ -9,7 +9,7 @@ class NVersionRepository:
     def __init__(self, version: NVersion):
         self.dbConnector = DBConnector('experiment.db')
         self.version = version
-        self.formal_json_db_lst_name = list
+        self.formal_json_db_lst_name = 'lst'
 
     def save(self, module_id=None):
         if not self.dbConnector.table_exists('version'):
@@ -25,14 +25,14 @@ class NVersionRepository:
             '''
             self.dbConnector.execute_query(create_query, [], True, False)
 
-        if self._id is None:
+        if self.version.id is None:
             additional_query_str = ', NULL' if module_id is None else f', {module_id}'
             insert_query = f'''
                 insert into version (name, const_diversities_coordinates, 
                 dynamic_diversities_coordinates, reliability, module) values (
-                    {self.version.name}, 
-                    {json.dumps({self.formal_json_db_lst_name: self.version.const_diversities})}, 
-                    {json.dumps({self.formal_json_db_lst_name: self.version.dynamic_diversities})},
+                    '{self.version.name}', 
+                    '{json.dumps({self.formal_json_db_lst_name: self.version.const_diversities})}', 
+                    '{json.dumps({self.formal_json_db_lst_name: self.version.dynamic_diversities})}',
                     {self.version._reliability}{additional_query_str});
             '''
             # Т.к. у нас возвращается список кортежей, берём первый элемент первого кортежа, т.к. id сего 1 возвращется!

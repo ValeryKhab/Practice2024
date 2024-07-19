@@ -52,7 +52,10 @@ def generate_error_value(module, base_val, diversity_coefficient):
 
 def process_clone_versions(module, clone_versions, cur_correct_val,
                            result_lst, i, experiment_name):
-    min_rel = min(ver.reliability for ver in clone_versions)
+    try:
+        min_rel = min(ver.reliability for ver in clone_versions)
+    except ValueError:
+        min_rel = 1
 
     cur_clone_reliability = random()
 
@@ -104,7 +107,8 @@ def process_partly_similar_versions(module, partly_similar_versions,
             if ver1 != ver2:
                 v1_index = module.versions_list.index(ver1)
                 v2_index = module.versions_list.index(ver2)
-                if module.normed_connectivity_matrix[v1_index][v2_index] >= cur_partly_similar_diversity:
+                if module.normed_connectivity_matrix[v1_index][
+                    v2_index] >= cur_partly_similar_diversity:
                     partly_similar_depended_versions.add(ver1)
                     partly_similar_depended_versions.add(ver2)
                 else:
@@ -171,9 +175,8 @@ def generate_experiment_data(module, iterations_amount: int,
         clone_versions, similar_versions, partly_similar_versions, difference_versions = group_versions(
             module)
         # Генерируем значение, которое будет считаться правильным ответом на текущей итерации
-        cur_correct_val = uniform(module.min_out_val,
-                                  module.max_out_val).__round__(
-            module.round_to)
+        cur_correct_val = round(uniform(module.min_out_val,
+                                        module.max_out_val), module.round_to)
         # ---------------------------------------------------------------
         # 1. Генерируем выходные данные для версий-клонов
         process_clone_versions(module, clone_versions, cur_correct_val,
