@@ -256,7 +256,13 @@ def main():
         elif user_chosen_item == MenuOption.RUN_VOTE_ALGORITHMS:
             run_vote_algorithm(modules_list, current_module_index, vote_algorithms_list)
         elif user_chosen_item == MenuOption.MAKE_EXPERIMENT_ANALYSIS:
-            pass
+            # Проверка функции загрузки результатов голосования
+            if check_var_is_not_none(current_module_index, module_index_err_str):
+                if len(vote_algorithms_list) > 0:
+                    for cur_algorithm in vote_algorithms_list:
+                        VoteAlgorithmRepository(cur_algorithm).load_vote_results(modules_list[current_module_index])
+                else:
+                    print('There are no algorithms!')
 
 
 if __name__ == '__main__':

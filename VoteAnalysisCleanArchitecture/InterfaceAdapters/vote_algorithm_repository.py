@@ -3,6 +3,7 @@ import json
 import os
 
 from InterfaceAdapters.data_base_connector import DBConnector
+from InterfaceAdapters.nmodule_repository import NModuleRepository
 from VoteAnalysisCleanArchitecture.UseCases.vote_algorithm import \
     VoteAlgorithm, ModuleNotLoadedError, FunctionNotFoundInModuleError
 
@@ -84,9 +85,35 @@ class VoteAlgorithmRepository:
                             tmp_ids.append(int(select_res[0][0]))
                     res['ids'] = tmp_ids
 
-    def load_vote_results(self):
-        # TODO: Дописать этот метод!
-        pass
+    def load_vote_results(self, cur_module):
+        if not self.dbConnector.table_exists('vote_result'):
+            raise LookupError(
+                f'There is no "VOTE_RESULT" table in {self.dbConnector.db_name} data base. Save module data before load it.'
+            )
+
+        vote_results = list()
+        select_query = f'''
+            select id, vote_answer, experiment_data_id from vote_result where algorithm_id = {self.voteAlgorithm._id};
+        '''
+        select_res = self.dbConnector.execute_query(select_query)
+        if len(select_res) > 0 and len(select_res[0]) > 0:
+            experiment_data = cur_module.global_results_lst
+            if not experiment_data or len(experiment_data) == 0:
+                experiment_name_query = f'''
+                    select experiment_name from experiment_data where id = {select_res[0][2]};
+                '''
+                experiment_name = self.dbConnector.execute_query(experiment_name_query)[0][0]
+                NModuleRepository(cur_module).load_experiment_data(experiment_name)
+                experiment_data = cur_module.global_results_lst
+            step = len(experiment_data[0])
+            for i in range(0, len(select_res), step):
+                ids = [select_res[j][0] for j in range(i, i + step)]
+                vote_results.append({
+                    "data": experiment_data[i // step],
+                    "res": select_res[i][1],
+                    "ids": ids
+                })
+            self.voteAlgorithm._vote_result = vote_results
 
     def load_algorithms(self) -> list:
         algorithms_list = list()
